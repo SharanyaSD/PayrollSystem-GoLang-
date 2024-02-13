@@ -3,7 +3,7 @@ package repository
 import (
 	"fmt"
 
-	"github.com/SharanyaSD/PayrollSystem.git/internal/repository"
+	"github.com/SharanyaSD/Payroll-GoLang.git/internal/repository"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -26,35 +26,6 @@ func (pr *PayrollStore) CreatePayroll(payroll repository.Payroll) (repository.Pa
 		return repository.Payroll{}, err
 	}
 	return payroll, nil
-}
-
-func (pr *PayrollStore) GetEarningsByEmpoyeeID(ID string) (repository.Earnings, error) {
-	var earning repository.Earnings
-	query := "SELECT * from earnings where id=$1"
-	fmt.Println("SQL Query:", query)
-	row := pr.Db.QueryRow(query, ID)
-	err := row.Scan(
-		&earning.ID, &earning.Basic, &earning.HRA, &earning.DA, &earning.SA, &earning.CA,
-		&earning.Bonus, &earning.GrossPay,
-	)
-	if err != nil {
-		return earning, err
-	}
-	return earning, nil
-}
-
-func (pr *PayrollStore) GetDeductionsByEmpoyeeID(ID string) (repository.Deductions, error) {
-	var deduction repository.Deductions
-	query := "SELECT * from deduction where id=$1"
-	fmt.Println("SQL Query:", query)
-	row := pr.Db.QueryRow(query, ID)
-	err := row.Scan(
-		&deduction.ID, &deduction.TDS, &deduction.PF, &deduction.Medical, &deduction.GrossDeduction,
-	)
-	if err != nil {
-		return deduction, err
-	}
-	return deduction, nil
 }
 
 func (pr *PayrollStore) GetPayroll() ([]repository.Payroll, error) {
@@ -81,3 +52,23 @@ func (pr *PayrollStore) GetPayroll() ([]repository.Payroll, error) {
 // 	return payroll, nil
 
 // }
+
+func (pr *PayrollStore) InsertEarnings(earnings repository.Earnings) (repository.Earnings, error) {
+	_, err := pr.Db.Exec("INSERT INTO earnings (id, basic, hra, da, sa, ca, bonus, gross_pay) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+		earnings.ID, earnings.Basic, earnings.HRA, earnings.DA, earnings.SA, earnings.CA, earnings.Bonus, earnings.GrossPay)
+	fmt.Println("Earnings added ", earnings.ID)
+	if err != nil {
+		return repository.Earnings{}, err
+	}
+	return earnings, nil
+}
+
+func (pr *PayrollStore) InsertDeductions(deductions repository.Deductions) (repository.Deductions, error) {
+	_, err := pr.Db.Exec("INSERT INTO deductions (id, tds, pf, medical, gross_deduction) VALUES ($1, $2, $3, $4, $5)",
+		deductions.ID, deductions.TDS, deductions.PF, deductions.Medical, deductions.GrossDeduction)
+	fmt.Println("Earnings added ", deductions.ID)
+	if err != nil {
+		return repository.Deductions{}, err
+	}
+	return deductions, nil
+}

@@ -17,7 +17,8 @@ type Employee struct {
 	ProofId            string    ` db:"proof_id"`
 	ResidentialAddress string    `db:"residential_address"`
 	HiredLocation      string    ` db:"hired_location"`
-	RoleId             string    ` db:"role_id"`
+	RoleId             int       ` db:"role_id"`
 	WorkStatus         string    `db:"work_status"`
 	Salary             float64   `db:"salary"`
+	Password           string    `db:"password"`
 }

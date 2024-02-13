@@ -15,9 +15,10 @@ type Employee struct {
 	ProofId            string    `json:"proof_id"`
 	ResidentialAddress string    `json:"residential_address"`
 	HiredLocation      string    `json:"hired_location"`
-	RoleId             string    `json:"role_id"`
+	RoleId             int       `json:"role_id"`
 	WorkStatus         string    `json:"work_status"`
 	Salary             float64   `json:"salary"`
+	Password           string    `json:"-"`
 }
 
 type CreateEmployeeRequest struct {
@@ -32,12 +33,13 @@ type CreateEmployeeRequest struct {
 	YearsOfExperience  int       `json:"years_of_experience"`
 	ProofId            string    `json:"proof_id"`
 	ResidentialAddress string    `json:"residential_address"`
-	RoleId             string    `json:"role_id"`
+	RoleId             int       `json:"role_id"`
 	HiredLocation      string    `json:"hired_location"`
 
 	//	RoleId     string `json:"role_id,omitempty"`
 	WorkStatus string  `json:"work_status"`
 	Salary     float64 `json:"salary"`
+	Password   string  `json:"-"`
 }
 
 // type UpdateEmployeeRequest struct {

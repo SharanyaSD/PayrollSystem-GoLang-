@@ -1,31 +1,27 @@
 package repository
 
-// "context"
-
-// "github.com/SharanyaSD/PayrollSystem.git/repository"
-
 type EmployeeStorer interface {
 	GetAllEmployees() ([]Employee, error)
 	GetEmployeeByID(ID string) (Employee, error)
 	CreateEmployee(emp Employee) (Employee, error)
-	//UpdateEmployee(ID string) (Employee, error)
 	DeleteEmployee(ID string) (Employee, error)
+	GetEmployeeByEmail(email string) (Employee, error)
 }
 
 type PayrollStorer interface {
-	CreatePayroll(payroll Payroll) (Payroll, error) // affecting original data everytime made changes *payroll
+	CreatePayroll(payroll Payroll) (Payroll, error)
 	GetPayroll() ([]Payroll, error)
-	GetEarningsByEmpoyeeID(ID string) (Earnings, error)
-	GetDeductionsByEmpoyeeID(ID string) (Deductions, error)
 }
 
-// type EarningsStorer interface {
-// 	GetEarningsByEmpoyeeID(ID string) (Earnings, error)
-// }
+type EarningsStorer interface {
+	GetEarningsByEmpoyeeID(ID string) (Earnings, error)
+	InsertEarnings(earnings Earnings) (Earnings, error)
+}
 
-// type DeductionStorer interface {
-// 	GetDeductionsByEmpoyeeID(ID string) (Deductions, error)
-// }
+type DeductionsStorer interface {
+	GetDeductionsByEmpoyeeID(ID string) (Deductions, error)
+	InsertDeductions(deductions Deductions) (Deductions, error)
+}
 
 type Earnings struct {
 	ID       string  `db:"id"`
@@ -44,4 +40,5 @@ type Deductions struct {
 	PF             float64 `db:"pf"`
 	Medical        float64 `db:"medical"`
 	GrossDeduction float64 `db:"gross_deduction"`
+	//AdditionalTaxes map[string]float64 // AdditionalTaxes should be initialized to avoid nil map panic
 }

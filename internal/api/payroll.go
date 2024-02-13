@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/SharanyaSD/PayrollSystem.git/internal/app/payroll"
-	"github.com/SharanyaSD/PayrollSystem.git/internal/pkg/dto"
+	"github.com/SharanyaSD/Payroll-GoLang.git/internal/app/payroll"
+	"github.com/SharanyaSD/Payroll-GoLang.git/internal/pkg/dto"
 )
 
-func CreatePayrollHandler(payrollSvc payroll.PayrollService) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
+func CreatePayrollHandler(payrollSvc payroll.PayrollService) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req dto.CreatePayrollRequest
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
@@ -38,7 +38,7 @@ func CreatePayrollHandler(payrollSvc payroll.PayrollService) func(w http.Respons
 		w.WriteHeader(http.StatusOK)
 		w.Write(responseJSON)
 		return
-	}
+	})
 }
 
 func GetPayrollHandler(payrollSvc payroll.PayrollService) func(w http.ResponseWriter, r *http.Request) {
@@ -58,6 +58,5 @@ func GetPayrollHandler(payrollSvc payroll.PayrollService) func(w http.ResponseWr
 		w.WriteHeader(http.StatusOK)
 		w.Write(responseJSON)
 		return
-
 	}
 }

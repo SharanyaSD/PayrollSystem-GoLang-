@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/SharanyaSD/PayrollSystem.git/internal/app/emp"
-	"github.com/SharanyaSD/PayrollSystem.git/internal/pkg/dto"
+	"github.com/SharanyaSD/Payroll-GoLang.git/internal/app/emp"
+	"github.com/SharanyaSD/Payroll-GoLang.git/internal/pkg/dto"
 )
 
 func CreateEmployeeHandler(empSvc emp.Service) func(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +38,6 @@ func CreateEmployeeHandler(empSvc emp.Service) func(w http.ResponseWriter, r *ht
 
 		w.WriteHeader(http.StatusOK)
 		w.Write(responseJSON)
-		return
 	}
 }
 
@@ -105,7 +104,6 @@ func GetAllEmployeesHandler(empSvc emp.Service) func(w http.ResponseWriter, r *h
 		}
 		w.WriteHeader(http.StatusOK)
 		w.Write(responseJSON)
-		return
 
 	}
 }
@@ -136,5 +134,33 @@ func GetEmployeeByIDHandler(empSvc emp.Service) func(w http.ResponseWriter, r *h
 		w.WriteHeader(http.StatusOK)
 		w.Write(responseJSON)
 
+	}
+}
+
+func LoginHandler(empSvc emp.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var credentials emp.Credentials
+		err := json.NewDecoder(r.Body).Decode(&credentials)
+		if err != nil {
+			http.Error(w, "Failed to decode request body: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		token, err := empSvc.Login(credentials.Email, credentials.Password)
+		if err != nil {
+			http.Error(w, "Failed to login: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Respond with token
+		responseJSON, err := json.Marshal(map[string]string{"token": token})
+		if err != nil {
+			http.Error(w, "Failed to serialize login info to JSON: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(responseJSON)
 	}
 }

@@ -5,7 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/SharanyaSD/PayrollSystem.git/internal/app"
+	"github.com/SharanyaSD/Payroll-GoLang.git/internal/app"
+	"github.com/SharanyaSD/Payroll-GoLang.git/internal/pkg/middleware"
+
 	"github.com/gorilla/mux"
 )
 
@@ -17,8 +19,15 @@ func NewRouter(deps app.Dependencies) *mux.Router {
 	r.HandleFunc("/createEmployee", CreateEmployeeHandler(deps.EmployeeService)).Methods(http.MethodPost)
 	//r.HandleFunc("/updateEmployee", UpdateEmployee).Methods(http.MethodPut)
 	r.HandleFunc("/deleteEmployee", DeleteEmployeeHandler(deps.EmployeeService)).Methods(http.MethodDelete)
-	r.HandleFunc("/createPayroll", CreatePayrollHandler(deps.PayrollService)).Methods(http.MethodPost)
+	//	r.Handle("/createPayroll", CreatePayrollHandler(deps.PayrollService)).Methods(http.MethodPost)
 	r.HandleFunc("/getPayroll", GetPayrollHandler(deps.PayrollService)).Methods(http.MethodGet)
+	r.HandleFunc("/login", LoginHandler(deps.EmployeeService)).Methods(http.MethodPost)
+
+	r.Handle("/createPayroll", middleware.AuthMiddleware(CreatePayrollHandler(deps.PayrollService), "Admin")).Methods(http.MethodPost)
+	//r.HandleFunc("/c reatePayroll", middleware.jwtMiddleware((CreatePayrollHandler(deps.PayrollService), "Admin"))).Methods(http.MethodPost)
+
+	//	r.HandleFunc("/home", GetEmployeeByIDHandler(deps.EmployeeService)).Methods(http.MethodPost)
+	//r.HandleFunc("/refresh", GetEmployeeByIDHandler(deps.EmployeeService)).Methods(http.MethodPost)
 	//	r.HandleFunc("/getPayrollByID", GetPayrollByIDHandler(deps.PayrollService)).Methods(http.MethodGet)
 
 	fmt.Printf("Starting server at 8080 ")

@@ -3,10 +3,11 @@ package app
 import (
 
 	//"github.com/SharanyaSD/PayrollSystem.git/repository"
-	"github.com/SharanyaSD/PayrollSystem.git/internal/app/emp"
-	"github.com/SharanyaSD/PayrollSystem.git/internal/app/payroll"
-	"github.com/SharanyaSD/PayrollSystem.git/internal/pkg/email"
-	repository "github.com/SharanyaSD/PayrollSystem.git/internal/repository/postgres"
+	"github.com/SharanyaSD/Payroll-GoLang.git/internal/app/emp"
+	"github.com/SharanyaSD/Payroll-GoLang.git/internal/app/payroll"
+	"github.com/SharanyaSD/Payroll-GoLang.git/internal/pkg/email"
+
+	repository "github.com/SharanyaSD/Payroll-GoLang.git/internal/repository/postgres"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -18,8 +19,8 @@ type Dependencies struct {
 
 func NewServices(db *sqlx.DB, apiKey string) Dependencies {
 	empRepo := repository.NewEmployeeRepo(db)
-	earningsRepo := repository.NewPayrollRepo(db)
-	deductionsRepo := repository.NewPayrollRepo(db)
+	earningsRepo := repository.NewEarningsRepo(db)
+	deductionsRepo := repository.NewDeductionsRepo(db)
 	payrollRepo := repository.NewPayrollRepo(db)
 
 	employeeService := emp.NewService(empRepo, earningsRepo, deductionsRepo)

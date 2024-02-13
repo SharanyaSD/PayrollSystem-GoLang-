@@ -3,7 +3,7 @@ package repository
 import (
 	"fmt"
 
-	"github.com/SharanyaSD/PayrollSystem.git/internal/repository"
+	"github.com/SharanyaSD/Payroll-GoLang.git/internal/repository"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
@@ -22,12 +22,28 @@ func NewEmployeeRepo(db *sqlx.DB) repository.EmployeeStorer {
 func (e *EmployeeStore) GetEmployeeByID(ID string) (repository.Employee, error) {
 	var emp repository.Employee
 	query := "SELECT * FROM Employees WHERE id=$1"
-	fmt.Println("SQL Query:", query)
+	fmt.Println("SQL Query:", query, ID)
 	row := e.Db.QueryRow(query, ID)
 	err := row.Scan(
 		&emp.ID, &emp.FirstName, &emp.MiddleName, &emp.LastName, &emp.Email, &emp.DateOfBirth,
 		&emp.DateOfJoining, &emp.Designation, &emp.YearsOfExperience, &emp.ProofId, &emp.ResidentialAddress,
-		&emp.HiredLocation, &emp.RoleId, &emp.WorkStatus, &emp.Salary,
+		&emp.HiredLocation, &emp.RoleId, &emp.WorkStatus, &emp.Salary, &emp.Password,
+	)
+	if err != nil {
+		return emp, err
+	}
+	return emp, nil
+}
+
+func (e *EmployeeStore) GetEmployeeByEmail(email string) (repository.Employee, error) {
+	var emp repository.Employee
+	query := "SELECT * FROM Employees WHERE email=$1"
+	fmt.Println("SQL Query:", query, email)
+	row := e.Db.QueryRow(query, email)
+	err := row.Scan(
+		&emp.ID, &emp.FirstName, &emp.MiddleName, &emp.LastName, &emp.Email, &emp.DateOfBirth,
+		&emp.DateOfJoining, &emp.Designation, &emp.YearsOfExperience, &emp.ProofId, &emp.ResidentialAddress,
+		&emp.HiredLocation, &emp.RoleId, &emp.WorkStatus, &emp.Salary, &emp.Password,
 	)
 	if err != nil {
 		return emp, err
@@ -45,8 +61,8 @@ func (e *EmployeeStore) GetEmployeeByID(ID string) (repository.Employee, error) 
 // }
 
 func (e *EmployeeStore) CreateEmployee(emp repository.Employee) (repository.Employee, error) {
-	_, err := e.Db.Exec("INSERT INTO Employees (id, first_name, middle_name, last_name, email, date_of_birth, date_of_joining, designation, years_of_experience, proof_id, residential_address, hired_location, role_id, work_status, salary) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)",
-		emp.ID, emp.FirstName, emp.MiddleName, emp.LastName, emp.Email, emp.DateOfBirth, emp.DateOfJoining, emp.Designation, emp.YearsOfExperience, emp.ProofId, emp.ResidentialAddress, emp.HiredLocation, emp.RoleId, emp.WorkStatus, emp.Salary)
+	_, err := e.Db.Exec("INSERT INTO Employees (id, first_name, middle_name, last_name, email, date_of_birth, date_of_joining, designation, years_of_experience, proof_id, residential_address, hired_location, role_id, work_status, salary, password) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)",
+		emp.ID, emp.FirstName, emp.MiddleName, emp.LastName, emp.Email, emp.DateOfBirth, emp.DateOfJoining, emp.Designation, emp.YearsOfExperience, emp.ProofId, emp.ResidentialAddress, emp.HiredLocation, emp.RoleId, emp.WorkStatus, emp.Salary, emp.Password)
 
 	if err != nil {
 		return repository.Employee{}, err
@@ -65,7 +81,7 @@ func (e *EmployeeStore) GetAllEmployees() ([]repository.Employee, error) {
 	var emps []repository.Employee
 	for rows.Next() {
 		var emp repository.Employee
-		if err := rows.Scan(&emp.ID, &emp.FirstName, &emp.MiddleName, &emp.LastName, &emp.Email, &emp.DateOfBirth, &emp.DateOfJoining, &emp.Designation, &emp.YearsOfExperience, &emp.ProofId, &emp.ResidentialAddress, &emp.HiredLocation, &emp.RoleId, &emp.WorkStatus, &emp.Salary); err != nil {
+		if err := rows.Scan(&emp.ID, &emp.FirstName, &emp.MiddleName, &emp.LastName, &emp.Email, &emp.DateOfBirth, &emp.DateOfJoining, &emp.Designation, &emp.YearsOfExperience, &emp.ProofId, &emp.ResidentialAddress, &emp.HiredLocation, &emp.RoleId, &emp.WorkStatus, &emp.Salary, &emp.Password); err != nil {
 			return nil, err
 		}
 		emps = append(emps, emp)
@@ -91,23 +107,3 @@ func (e *EmployeeStore) DeleteEmployee(ID string) (repository.Employee, error) {
 	}
 	return emp, nil
 }
-
-// func GetAllEmployees(ctx context.Context) {
-
-// }
-
-// func GetEmployeeByID(ctx context.Context, id string) {
-
-// }
-
-// func CreateEmployee(ctx context.Context) {
-
-// }
-
-// func UpdateEmployee(ctx context.Context, id string) {
-
-// }
-
-// func DeleteEmployee(ctx context.Context, id string) {
-
-// }

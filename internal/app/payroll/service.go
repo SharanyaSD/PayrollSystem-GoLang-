@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/SharanyaSD/PayrollSystem.git/internal/app/emp"
-	"github.com/SharanyaSD/PayrollSystem.git/internal/pkg/dto"
-	"github.com/SharanyaSD/PayrollSystem.git/internal/pkg/email"
-	"github.com/SharanyaSD/PayrollSystem.git/internal/repository"
+	"github.com/SharanyaSD/Payroll-GoLang.git/internal/app/emp"
+	"github.com/SharanyaSD/Payroll-GoLang.git/internal/pkg/dto"
+	"github.com/SharanyaSD/Payroll-GoLang.git/internal/pkg/email"
+	"github.com/SharanyaSD/Payroll-GoLang.git/internal/repository"
 )
 
 // dependencies
@@ -30,6 +30,7 @@ func NewPayrollService(payrollRepo repository.PayrollStorer, employeeService emp
 type PayrollService interface {
 	CreatePayroll(payrollDetails dto.CreatePayrollRequest) (repository.Payroll, error)
 	GetPayroll() ([]dto.Payroll, error)
+
 	//GetPayrollByID(payroll_id string) (dto.Payroll, error)
 }
 
@@ -42,7 +43,7 @@ func (ps *payrollService) CreatePayroll(payrollDetails dto.CreatePayrollRequest)
 	//check date of salary
 	payDate := time.Now()
 	if payDate.Day() < 5 {
-		return repository.Payroll{}, fmt.Errorf("Payroll cannot be generated before 5th!")
+		return repository.Payroll{}, fmt.Errorf("CANNOT BE GENRATED BEFORE 5TH")
 	}
 
 	salary := employee.Salary
@@ -71,21 +72,21 @@ func (ps *payrollService) CreatePayroll(payrollDetails dto.CreatePayrollRequest)
 		return repository.Payroll{}, err
 	}
 
-	//email msg
-	emailContent := fmt.Sprintf("Dear %s,\n Your payroll for the month has been generated. \n\n Salary: %.2f\nNet Pay: %.2f\n\nBest regards,\nPayroll Team", employee.FirstName, payroll.Salary, payroll.NetPaySalary)
+	// //email msg
+	// emailContent := fmt.Sprintf("Dear %s,\n Your payroll for the month has been generated. \n\n Salary: %.2f\nNet Pay: %.2f\n\nBest regards,\nPayroll Team", employee.FirstName, payroll.Salary, payroll.NetPaySalary)
 
-	//send email
-	err = ps.emailService.SendEmail(employee.Email, "Payroll for the month", emailContent)
-	if err != nil {
-		return repository.Payroll{}, err
-	}
+	// //send email
+	// err = ps.emailService.SendEmail("sharanyadatrange1@gmail.com", "Payroll for the month", emailContent)
+	// if err != nil {
+	// 	return repository.Payroll{}, err
+	// }
 
 	return payroll, nil
 
 }
 
 func calculateNetPay(salary float64, earnings repository.Earnings, deductions repository.Deductions) float64 {
-	netPay := (salary + earnings.Basic + earnings.HRA) - (deductions.PF - deductions.TDS - deductions.Medical)
+	netPay := (salary + earnings.GrossPay) - deductions.GrossDeduction
 	return netPay
 }
 
