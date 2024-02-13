@@ -25,8 +25,8 @@ func NewEmailService(apiKey string) Service {
 func (es *emailService) SendEmail(to, subject, content string) error {
 
 	fmt.Println("aopi key : ", es.apiKey)
-	from := mail.NewEmail("Payroll ", "payroll@testapp.com")
-	toEmail := mail.NewEmail("", to)
+	from := mail.NewEmail("Payroll ", "sagar.sonwane@joshsoftware.com")
+	toEmail := mail.NewEmail("Sharanya", to)
 	plainTextContent := content
 	htmlContent := content
 	message := mail.NewSingleEmail(from, subject, toEmail, plainTextContent, htmlContent)
@@ -40,7 +40,7 @@ func (es *emailService) SendEmail(to, subject, content string) error {
 	if response.StatusCode >= 200 && response.StatusCode < 300 {
 		return nil
 	} else {
-		return fmt.Errorf("Failed to send email, status code : %d", response.StatusCode)
+		return fmt.Errorf("FAILED TO SEND EMAIL : %d", response.StatusCode)
 	}
 
 }

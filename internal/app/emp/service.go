@@ -76,38 +76,26 @@ func (es *service) CreateEmployee(employeeDetails dto.CreateEmployeeRequest) (re
 		Password:           employeeDetails.Password,
 	}
 
-	// createdEmployee, err := es.empRepo.CreateEmployee(empInfo)
-	// if err != nil {
-	// 	return repository.Employee{}, err
-	// }
+	createdEmployee, err := es.empRepo.CreateEmployee(empInfo)
+	if err != nil {
+		return repository.Employee{}, err
+	}
 
-	// defaultEarnings := repository.Earnings{
-	// 	ID:    createdEmployee.ID,
-	// 	Basic: DefaultBasicEarning,
-	// 	HRA:   DefaultHRA,
-	// 	DA:    DefaultDA,
-	// 	SA:    DefaultSA,
-	// 	CA:    DefaultCA,
-	// 	Bonus: DefaultBonus,
-	// }
-	// _, err = es.earningsRepo.InsertEarnings(defaultEarnings)
-	// if err != nil {
-	// 	return repository.Employee{}, err
-	// }
+	defaultEarnings := earningsMap[empInfo.Designation]
+	defaultEarnings.ID = empInfo.ID
+	_, err = es.earningsRepo.InsertEarnings(defaultEarnings)
+	if err != nil {
+		return repository.Employee{}, err
+	}
 
-	// DefaultDeductions := repository.Deductions{
-	// 	ID:      createdEmployee.ID,
-	// 	TDS:     DefaultTDS,
-	// 	PF:      DefaultPF,
-	// 	Medical: DefaultMedical,
-	// }
-	// _, err = es.deductionsRepo.InsertDeductions(DefaultDeductions)
-	// if err != nil {
+	defaultDeductions := deductionsMap[empInfo.Designation]
+	defaultDeductions.ID = empInfo.ID
+	_, err = es.deductionsRepo.InsertDeductions(defaultDeductions)
+	if err != nil {
+		return repository.Employee{}, err
+	}
 
-	// 	return repository.Employee{}, err
-	// }
-
-	return es.empRepo.CreateEmployee(empInfo)
+	return createdEmployee, nil
 }
 
 // func UpdateEmployee(ctx context.Context, id string) {
@@ -206,26 +194,62 @@ func (es *service) GetEmployeeByID(id string) (dto.Employee, error) {
 }
 
 const (
-	ManagerBasicEarning = 5000.0
+	ManagerBasicEarning = 1000.0
 	ManagerHRA          = 0.4 * ManagerBasicEarning
 	ManagerDA           = 0.15 * ManagerBasicEarning
-	ManagerSA           = 1000.0
-	ManagerCA           = 500.0
-	ManagerBonus        = 1000.0
-	ManagerTDS          = 1000.0
+	ManagerSA           = 500.0
+	ManagerCA           = 200.0
+	ManagerBonus        = 500.0
+	ManagerTDS          = 6000.0
 	ManagerPF           = 0.12 * ManagerBasicEarning
-	ManagerMedical      = 1000.0
+	ManagerMedical      = 3000.0
 
-	DefaultBasicEarning = 4000.0
+	DefaultBasicEarning = 800.0
 	DefaultHRA          = 0.3 * DefaultBasicEarning
 	DefaultDA           = 0.12 * DefaultBasicEarning
-	DefaultSA           = 800.0
-	DefaultCA           = 400.0
-	DefaultBonus        = 800.0
-	DefaultTDS          = 800.0
+	DefaultSA           = 500.0
+	DefaultCA           = 200.0
+	DefaultBonus        = 150.0
+	DefaultTDS          = 5000.0
 	DefaultPF           = 0.1 * DefaultBasicEarning
-	DefaultMedical      = 800.0
+	DefaultMedical      = 2000.0
 )
+
+var earningsMap = map[string]repository.Earnings{
+	"Manager": {
+		Basic:    ManagerBasicEarning,
+		HRA:      ManagerHRA,
+		DA:       ManagerDA,
+		SA:       ManagerSA,
+		CA:       ManagerCA,
+		Bonus:    ManagerBonus,
+		GrossPay: ManagerBasicEarning + ManagerHRA + ManagerDA + ManagerSA + ManagerCA + ManagerBonus,
+	},
+	"Employee": {
+		Basic:    DefaultBasicEarning,
+		HRA:      DefaultHRA,
+		DA:       DefaultDA,
+		SA:       DefaultSA,
+		CA:       DefaultCA,
+		Bonus:    DefaultBonus,
+		GrossPay: DefaultBasicEarning + DefaultHRA + DefaultDA + DefaultSA + DefaultCA + DefaultBonus,
+	},
+}
+
+var deductionsMap = map[string]repository.Deductions{
+	"Manager": {
+		TDS:            ManagerTDS,
+		PF:             ManagerPF,
+		Medical:        ManagerMedical,
+		GrossDeduction: ManagerTDS + ManagerPF + ManagerMedical,
+	},
+	"Employee": {
+		TDS:            DefaultTDS,
+		PF:             DefaultPF,
+		Medical:        DefaultMedical,
+		GrossDeduction: DefaultTDS + DefaultPF + DefaultMedical,
+	},
+}
 
 func (es *service) GetEarningsByEmpoyeeID(ID string) (repository.Earnings, error) {
 	employee, err := es.empRepo.GetEmployeeByID(ID)
@@ -266,7 +290,6 @@ func (es *service) GetEarningsByEmpoyeeID(ID string) (repository.Earnings, error
 	// earnings.HRA = hra
 	// earnings.DA = da
 	earnings.GrossPay = grossPay
-
 	return earnings, nil
 }
 

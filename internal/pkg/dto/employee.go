@@ -39,7 +39,7 @@ type CreateEmployeeRequest struct {
 	//	RoleId     string `json:"role_id,omitempty"`
 	WorkStatus string  `json:"work_status"`
 	Salary     float64 `json:"salary"`
-	Password   string  `json:"-"`
+	Password   string  `json:"password"`
 }
 
 // type UpdateEmployeeRequest struct {

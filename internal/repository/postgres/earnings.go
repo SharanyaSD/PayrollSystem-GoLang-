@@ -20,11 +20,11 @@ func NewEarningsRepo(db *sqlx.DB) repository.EarningsStorer {
 func (es *EarningsStore) GetEarningsByEmpoyeeID(ID string) (repository.Earnings, error) {
 	var earning repository.Earnings
 	query := "SELECT * from earnings where id=$1"
-	fmt.Println("SQL Query:", query)
+	fmt.Println("SQL Query :", ID, query)
 	row := es.Db.QueryRow(query, ID)
 	err := row.Scan(
-		&earning.ID, &earning.Basic, &earning.HRA, &earning.DA, &earning.SA, &earning.CA,
-		&earning.Bonus, &earning.GrossPay,
+		&earning.Basic, &earning.HRA, &earning.DA, &earning.SA, &earning.CA,
+		&earning.Bonus, &earning.GrossPay, &earning.ID,
 	)
 	if err != nil {
 		return earning, err

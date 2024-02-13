@@ -72,14 +72,14 @@ func (ps *payrollService) CreatePayroll(payrollDetails dto.CreatePayrollRequest)
 		return repository.Payroll{}, err
 	}
 
-	// //email msg
-	// emailContent := fmt.Sprintf("Dear %s,\n Your payroll for the month has been generated. \n\n Salary: %.2f\nNet Pay: %.2f\n\nBest regards,\nPayroll Team", employee.FirstName, payroll.Salary, payroll.NetPaySalary)
+	//email msg
+	emailContent := fmt.Sprintf("Dear %s,\n Your payroll for the month has been generated. \n\n Salary: %.2f\nNet Pay: %.2f\n\nBest regards,\nPayroll Team", employee.FirstName, payroll.Salary, payroll.NetPaySalary)
 
-	// //send email
-	// err = ps.emailService.SendEmail("sharanyadatrange1@gmail.com", "Payroll for the month", emailContent)
-	// if err != nil {
-	// 	return repository.Payroll{}, err
-	// }
+	//send email
+	err = ps.emailService.SendEmail("sharanyadatrange1@gmail.com", "Payroll for the month", emailContent)
+	if err != nil {
+		return repository.Payroll{}, err
+	}
 
 	return payroll, nil
 
