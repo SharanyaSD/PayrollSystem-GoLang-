@@ -2,12 +2,19 @@ package emp
 
 import (
 	"errors"
+	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/SharanyaSD/Payroll-GoLang.git/internal/pkg/dto"
 	"github.com/SharanyaSD/Payroll-GoLang.git/internal/repository"
 	"github.com/golang-jwt/jwt"
 )
+
+var ErrInvalidEmail = errors.New("INVALID EMAIL")
+var ErrEmployeeNotFound = errors.New("EMPLOYEE NOT FOUND")
+var ErrEmailNotFound = errors.New("EMAIL NOT FOUND")
+var ErrMissingRequiredFields = errors.New("REQUIRED FIELDS NOT FILLED")
 
 type service struct {
 	empRepo        repository.EmployeeStorer
@@ -57,6 +64,43 @@ func NewService(empRepo repository.EmployeeStorer, earningsRepo repository.Earni
 
 // func (es *service) CreateEmployee(employeeDetails dto.CreateEmployeeRequest) (employee repository.Employee, error)
 func (es *service) CreateEmployee(employeeDetails dto.CreateEmployeeRequest) (repository.Employee, error) {
+	if err := es.validateEmail(employeeDetails.Email); err != nil {
+		fmt.Println(" in error")
+		return repository.Employee{}, err
+	}
+
+	if err := es.validateRequiredFields(employeeDetails); err != nil {
+		return repository.Employee{}, err
+	}
+
+	if err := es.validateDateFields(employeeDetails.DateOfBirth, employeeDetails.DateOfJoining); err != nil {
+		return repository.Employee{}, err
+	}
+
+	if err := es.validateWorkStatus(employeeDetails.WorkStatus); err != nil {
+		return repository.Employee{}, err
+	}
+
+	if err := es.validateProofID(employeeDetails.ProofId); err != nil {
+		return repository.Employee{}, err
+	}
+
+	if err := es.validateRoleID(employeeDetails.RoleId); err != nil {
+		return repository.Employee{}, err
+	}
+
+	if err := es.validateSalary(employeeDetails.Salary); err != nil {
+		return repository.Employee{}, err
+	}
+
+	if err := es.validateYOE(employeeDetails.YearsOfExperience); err != nil {
+		return repository.Employee{}, err
+	}
+
+	// if err := es.validateIDFields(employeeDetails.ProofId); err != nil {
+	// 	return repository.Employee{}, err
+	// }
+
 	empInfo := repository.Employee{
 		ID:                 employeeDetails.ID,
 		FirstName:          employeeDetails.FirstName,
@@ -98,11 +142,80 @@ func (es *service) CreateEmployee(employeeDetails dto.CreateEmployeeRequest) (re
 	return createdEmployee, nil
 }
 
-// func UpdateEmployee(ctx context.Context, id string) {
+func (es *service) validateEmail(email string) error {
+	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	if !emailRegex.MatchString(email) {
+		return ErrInvalidEmail
+	}
+	return nil
+}
 
-// }
+func (es *service) validateRequiredFields(employeeDetails dto.CreateEmployeeRequest) error {
+	if employeeDetails.ID == "" || employeeDetails.FirstName == "" || employeeDetails.LastName == "" || employeeDetails.Email == "" {
+		return ErrMissingRequiredFields
+	}
+	return nil
+}
+
+func (es *service) validateDateFields(DateOfBirth, DateOfJoining time.Time) error {
+	if DateOfBirth.After(time.Now()) {
+		return errors.New("date of birth cannot be future")
+	}
+	if DateOfJoining.After(time.Now()) {
+		return errors.New("date of joining cannot be future")
+	}
+	return nil
+}
+
+func (es *service) validateWorkStatus(WorkStatus string) error {
+	status := map[string]bool{"active": true, "work from home": true, "retired": true, "leave": true, "part time": true, "full time": true, "resigned": true}
+	if !status[WorkStatus] {
+		return errors.New("INVALID WORK STATUS")
+	}
+	return nil
+}
+
+func (es *service) validateProofID(proofID string) error {
+	if proofID == "" {
+		return errors.New("PROVIDE PROOF ID")
+	}
+	return nil
+}
+
+func (es *service) validateRoleID(roleID int) error {
+	if roleID != 0 && roleID != 1 {
+		return errors.New("INVALID ROLE ID, SHOULD BE 0 FOR ADMIN, 1 FOR EMPLOYEE")
+	}
+	return nil
+}
+
+func (es *service) validateSalary(salary float64) error {
+	if salary <= 0 {
+		return errors.New("SALARY CANNOT BE NEGATIVE OR ZERO")
+	}
+	return nil
+}
+
+func (es *service) validateYOE(years_of_experience int) error {
+	if years_of_experience < 0 {
+		return errors.New("YEARS OF EXPERIENCE CANNOT BE NEGATIVE")
+	}
+	return nil
+}
+
+// password field not validated for now - default password given to employees -
 
 func (es *service) DeleteEmployee(id string) (dto.Employee, error) {
+	//validating if emp does not exist
+	_, err := es.empRepo.GetEmployeeByID(id)
+	if err != nil {
+		if errors.Is(err, ErrEmployeeNotFound) {
+			return dto.Employee{}, errors.New("EMPLOYEE WITH PROVIDED ID DOES NOT EXIST")
+
+		}
+		return dto.Employee{}, err
+	}
+
 	employee, err := es.empRepo.DeleteEmployee(id)
 	if err != nil {
 		return dto.Employee{}, err
@@ -163,6 +276,16 @@ func (es *service) GetAllEmployees() ([]dto.Employee, error) {
 }
 
 func (es *service) GetEmployeeByID(id string) (dto.Employee, error) {
+
+	//validating if emp does not exist
+	_, err := es.empRepo.GetEmployeeByID(id)
+	if err != nil {
+		if errors.Is(err, ErrEmployeeNotFound) {
+			return dto.Employee{}, errors.New("EMPLOYEE WITH PROVIDED ID DOES NOT EXIST")
+
+		}
+		return dto.Employee{}, err
+	}
 
 	employee, err := es.empRepo.GetEmployeeByID(id)
 	if err != nil {
@@ -352,6 +475,12 @@ func (es *service) InsertDeductions(deductions repository.Deductions) (repositor
 }
 
 func (es *service) GetEmployeeByEmail(email string) (dto.Employee, error) {
+
+	//validating if emp does not exist
+	if email == "" {
+		return dto.Employee{}, ErrEmailNotFound
+	}
+
 	employee, err := es.empRepo.GetEmployeeByEmail(email)
 	if err != nil {
 		return dto.Employee{}, err
@@ -387,10 +516,20 @@ func (es *service) Login(email, password string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if emp.Email == "" {
+		return "", ErrEmailNotFound
+	}
+	if emp.Password == "" {
+		return "", errors.New("password cannot be empty")
+	}
 
 	// expectedPassword, ok := users[username]
 	if emp.Password != password {
 		return "", errors.New("invalid email or password")
+	}
+
+	if err := es.validateEmail(emp.Email); err != nil {
+		return "", errors.New("invalid email format")
 	}
 
 	expirationTime := time.Now().Add(5 * time.Minute)

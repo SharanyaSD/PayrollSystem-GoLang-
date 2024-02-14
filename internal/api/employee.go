@@ -2,8 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/SharanyaSD/Payroll-GoLang.git/internal/app/emp"
 	"github.com/SharanyaSD/Payroll-GoLang.git/internal/pkg/dto"
@@ -21,6 +23,12 @@ func CreateEmployeeHandler(empSvc emp.Service) func(w http.ResponseWriter, r *ht
 		}
 
 		fmt.Printf("%+v", req)
+
+		if req.DateOfBirth.After(time.Now()) {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Date of birth cannot be in the future"))
+			return
+		}
 
 		employeeInfo, err := empSvc.CreateEmployee(req)
 		if err != nil {
@@ -40,26 +48,6 @@ func CreateEmployeeHandler(empSvc emp.Service) func(w http.ResponseWriter, r *ht
 		w.Write(responseJSON)
 	}
 }
-
-// func UpdateEmployee(empSvc emp.Service) func(w http.ResponseWriter, r *http.Request) {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		ctx := r.Context()
-// 		var req dto.UpdateEmployeeRequest
-// 		err := json.NewDecoder(r.Body).Decode(&req)
-// 		if err != nil {
-// 			w.WriteHeader(http.StatusBadRequest)
-// 			return
-// 		}
-
-// 		err := empSvc.CreateEmployee(ctx, req)
-// 		if err != nil {
-// 			w.WriteHeader(http.StatusBadRequest)
-// 			return
-// 		}
-// 		w.WriteHeader(http.StatusOK)
-// 	}
-
-// }
 
 func DeleteEmployeeHandler(empSvc emp.Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -112,12 +100,17 @@ func GetEmployeeByIDHandler(empSvc emp.Service) func(w http.ResponseWriter, r *h
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Query().Get("id")
 
+		if id == "" {
+			http.Error(w, "No ID provided", http.StatusBadRequest)
+			return
+		}
+
 		employee, err := empSvc.GetEmployeeByID(id)
 		if err != nil {
 			// w.WriteHeader(http.StatusInternalServerError)
 			// w.Write([]byte(err.Error()))
 			// return
-			http.Error(w, "Failed to get employee: "+err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Failed to get employee: "+err.Error(), http.StatusNotFound)
 			return
 		}
 
@@ -126,7 +119,7 @@ func GetEmployeeByIDHandler(empSvc emp.Service) func(w http.ResponseWriter, r *h
 			// w.WriteHeader(http.StatusInternalServerError)
 			// w.Write([]byte(err.Error()))
 			// return
-			http.Error(w, "Failed to serialize employee to JSON: "+err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Failed to serialize employee to JSON: "+err.Error(), http.StatusNotFound)
 			return
 		}
 
@@ -148,6 +141,11 @@ func LoginHandler(empSvc emp.Service) http.HandlerFunc {
 
 		token, err := empSvc.Login(credentials.Email, credentials.Password)
 		if err != nil {
+			if errors.Is(err, emp.ErrEmailNotFound) {
+				http.Error(w, "Email not found", http.StatusNotFound)
+				return
+			}
+
 			http.Error(w, "Failed to login: "+err.Error(), http.StatusInternalServerError)
 			return
 		}

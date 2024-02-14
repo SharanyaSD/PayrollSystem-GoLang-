@@ -43,7 +43,7 @@ func (ps *payrollService) CreatePayroll(payrollDetails dto.CreatePayrollRequest)
 	//check date of salary
 	payDate := time.Now()
 	if payDate.Day() < 5 {
-		return repository.Payroll{}, fmt.Errorf("CANNOT BE GENRATED BEFORE 5TH")
+		return repository.Payroll{}, fmt.Errorf("CANNOT BE GENERATED BEFORE 5TH")
 	}
 
 	salary := employee.Salary

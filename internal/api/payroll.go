@@ -9,7 +9,7 @@ import (
 	"github.com/SharanyaSD/Payroll-GoLang.git/internal/pkg/dto"
 )
 
-func CreatePayrollHandler(payrollSvc payroll.PayrollService) http.Handler {
+func CreatePayrollHandler(payrollSvc payroll.PayrollService) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req dto.CreatePayrollRequest
 		err := json.NewDecoder(r.Body).Decode(&req)
@@ -37,7 +37,7 @@ func CreatePayrollHandler(payrollSvc payroll.PayrollService) http.Handler {
 
 		w.WriteHeader(http.StatusOK)
 		w.Write(responseJSON)
-		return
+		//return
 	})
 }
 
@@ -57,6 +57,6 @@ func GetPayrollHandler(payrollSvc payroll.PayrollService) func(w http.ResponseWr
 		}
 		w.WriteHeader(http.StatusOK)
 		w.Write(responseJSON)
-		return
+		//return
 	}
 }

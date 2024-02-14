@@ -36,7 +36,6 @@ type CreateEmployeeRequest struct {
 	RoleId             int       `json:"role_id"`
 	HiredLocation      string    `json:"hired_location"`
 
-	//	RoleId     string `json:"role_id,omitempty"`
 	WorkStatus string  `json:"work_status"`
 	Salary     float64 `json:"salary"`
 	Password   string  `json:"password"`
